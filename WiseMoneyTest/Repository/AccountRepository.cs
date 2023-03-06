@@ -1,12 +1,12 @@
-﻿using WiseMoneyTest.Models;
+﻿using WiseMoneyTest.Entities;
 
 namespace WiseMoneyTest.Repository
 {
     public class AccountRepository
     {
-        private List<Account> AccountList = new List<Account>();
+        public static List<Account> AccountList = new List<Account>();
 
-        private List<Transactions> TransactionsList = new List<Transactions>();
+        
         public void CreateAccount(Account account)
         {
             int lastId;
@@ -24,30 +24,23 @@ namespace WiseMoneyTest.Repository
 
             AccountList.Add(account);
         }
-
-        public decimal GetBalance(Account account)
+        public bool CheckIfAccountNumberAlreadyExists(int accountNumber)
         {
-            return account.Balance;
+            return AccountList.Where(x => x.AccountNumber == accountNumber).Any();
         }
 
-        public void Transfer(Account accountSending, Account accountReceiving, decimal value)
+        public Account GetAccount(int accountNumber, int userId)
         {
+            var account = AccountList.FirstOrDefault(x => x.UserId == userId && x.AccountNumber == accountNumber);
 
-            Transactions transactionDebt = new Transactions(accountSending, "Debt", value, DateTime.Now);
-            Transactions transactionCredit = new Transactions(accountReceiving, "Credit", value, DateTime.Now);
-
-            TransactionsList.Add(transactionDebt);
-            TransactionsList.Add(transactionCredit);
-
-            accountSending.Balance -= value;
-            accountReceiving.Balance += value;
+            return account;
         }
 
-        public List<Transactions> GetBankStatement(Account account, DateTime startingDate, DateTime finishDate)
+        public Account GetAccount(int accountNumber)
         {
-            var accountTransactions = TransactionsList.Where(x => x.Account.AccountId == account.AccountId && x.Date >= startingDate && x.Date <= finishDate).ToList();
+            var account = AccountList.FirstOrDefault(x => x.AccountNumber == accountNumber);
 
-            return accountTransactions;
+            return account;
         }
     }
 }

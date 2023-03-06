@@ -5,7 +5,17 @@
       "ProjectGuid": "d63fb7b3-14a8-478c-8368-f4ccc6d1cf70",
       "DisplayName": "WiseMoneyTest",
       "ColorIndex": 0
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Arquivos Diversos",
+      "ColorIndex": -1
+    },
+    "8cfe6d0b-227a-4ac4-9fe2-0722fcf14429": {
+      "ProjectGuid": "8cfe6d0b-227a-4ac4-9fe2-0722fcf14429",
+      "DisplayName": "Tests",
+      "ColorIndex": 1
     }
   },
-  "NextColorIndex": 1
+  "NextColorIndex": 2
 }

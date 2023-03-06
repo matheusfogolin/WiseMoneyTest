@@ -1,19 +1,38 @@
-﻿using WiseMoneyTest.Models;
+﻿using WiseMoneyTest.Entities;
 
 namespace WiseMoneyTest.Repository
 {
     public class UserRepository
     {
-        private List<User> UsersList = new List<User>();
-
-        public void CreateUser(User user)
+        private static List<User> UsersList = new List<User>();
+        public User CreateUser(User user)
         {
+            int lastId;
+
+            if (UsersList.Count > 0)
+            {
+                lastId = UsersList.Max(x => x.UserId);
+            }
+            else
+            {
+                lastId = 0;
+            }
+
+            user.UserId = lastId + 1;
+
             UsersList.Add(user);
+
+            return user;
         }
 
-        public string MakeLogin(string login, string password)
+        public User? GetUser(string emailAdress, string password)
         {
-            return UsersList.Where(x => x.EmailAdress == login && x.Password == password).Any() ? "Login realizado com sucesso." : "E-mail ou senha incorretos.";
+            return UsersList.SingleOrDefault(x => x.EmailAdress.ToLower() == emailAdress.ToLower() && x.Password == password);
+        }
+
+        public bool EmailAlreadyRegistered(string email)
+        {
+            return UsersList.FirstOrDefault(x => x.EmailAdress == email) == null ? false : true;
         }
     }
 }
