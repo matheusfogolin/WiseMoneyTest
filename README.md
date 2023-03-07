@@ -80,8 +80,10 @@ Ter o docker na sua máquina
 PASSO A PASSO:  
 - Abra o prompt de comando e navegue até a raiz do projeto(onde está o arquivo Dockerfile);
 - Rodar o comando: docker build -t <nome_da_imagem_que_deseja_criar> .;
+![image](https://user-images.githubusercontent.com/57686224/223288969-b77c9ad7-6e1c-481b-a311-a1fae9f03faf.png)
 Exemplo: docker build -t wisemoneytest .
 - Após criada a imagem, rodar o comando: docker run -p <porta_local>:80 <nome_da_imagem>
+![image](https://user-images.githubusercontent.com/57686224/223289096-c2fe279b-b52d-4946-91e6-e67312c5ae02.png)
 Exemplo: docker run -p 5000:80 wisemoneytest
 O swagger estará rodando no endereço: http://localhost:<porta_local>/swagger
 Exemplo: http://localhost:5000/swagger
