@@ -1,4 +1,4 @@
-DESCRIÇÃO DO PROJETO
+## DESCRIÇÃO DO PROJETO
 
 WiseMoneyTest é um projeto de API de um banco, que traz as seguintes funcionalidades:
 - Criação de usuário,
@@ -9,7 +9,7 @@ WiseMoneyTest é um projeto de API de um banco, que traz as seguintes funcionali
 - Deposito,
 - Obtenção de extrato da conta por período.
 
-DESCRIÇÃO DE ENDPOINTS
+## DESCRIÇÃO DE ENDPOINTS
 
 ROTA USER
 
@@ -58,12 +58,13 @@ Recebe um JSON com os números das contas envolvidas na transação, diferencian
 Recebe como parâmetro o número da conta(accountNumber), e o intervalo das datas que devem ser checadas (startingDate e finishDate).
 Retorna uma lista com as transações da conta no período.
 
-COMO RODAR O PROJETO
+## COMO RODAR O PROJETO
 
 UTILIZANDO .NET
 Requisitos:
-- .NET Versão 6.0 ou mais atual.
+NET Versão 6.0 ou mais atual.
 
+PASSO A PASSO
 - Abrir o prompt de comando e navegar até a pasta onde está a raiz do projeto;
 - Rodar o comando "dotnet build";
 ![image](https://user-images.githubusercontent.com/57686224/223191850-90d20728-06e4-4960-9e5a-4d0acf6c772b.png)
@@ -71,3 +72,16 @@ Requisitos:
 ![image](https://user-images.githubusercontent.com/57686224/223192689-60528384-789c-4ae3-8d80-c2d100dbad41.png)
 - Para acessar o Swagger, acessar no browser: https://localhost:<porta_em_que_o_projeto_esta_rodando>/swagger/index.html
 Exemplo: https://localhost:7298/swagger/index.html
+
+UTILIZANDO DOCKER
+Requisitos:
+Ter o docker na sua máquina
+
+PASSO A PASSO:  
+- Abra o prompt de comando e navegue até a raiz do projeto(onde está o arquivo Dockerfile);
+- Rodar o comando: docker build -t <nome_da_imagem_que_deseja_criar> .;
+Exemplo: docker build -t wisemoneytest .
+- Após criada a imagem, rodar o comando: docker run -p <porta_local>:80 <nome_da_imagem>
+Exemplo: docker run -p 5000:80 wisemoneytest
+O swagger estará rodando no endereço: http://localhost:<porta_local>/swagger
+Exemplo: http://localhost:5000/swagger
