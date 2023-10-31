@@ -8,8 +8,9 @@
             Password = password;
         }
 
-        public int UserId { get; set; }
+        public Guid Id { get; set; }
         public string EmailAdress { get; set; }
         public string Password { get; set; }
+        public List<Account> Accounts { get; set; }
     }
 }

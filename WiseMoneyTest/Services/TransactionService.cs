@@ -2,22 +2,24 @@
 using WiseMoneyTest.Exceptions;
 using WiseMoneyTest.Models.Transactions;
 using WiseMoneyTest.Repository;
+using WiseMoneyTest.Repository.Interfaces;
+using WiseMoneyTest.Services.Interfaces;
 
 namespace WiseMoneyTest.Services
 {
-    public class TransactionService
+    public class TransactionService : ITransactionService
     {
-        private readonly TransactionRepository transactionRepository;
-        private readonly AccountRepository accountRepository;
-        public TransactionService()
+        private readonly ITransactionRepository _transactionRepository;
+        private readonly IAccountRepository _accountRepository;
+        public TransactionService(ITransactionRepository transactionRepository, IAccountRepository accountRepository)
         {
-            transactionRepository = new TransactionRepository();
-            accountRepository = new AccountRepository();
+            _transactionRepository = transactionRepository;
+            _accountRepository = accountRepository;
         }
-        public void Transfer(TransferInputModel transferInputModel, int userId)
+        public void Transfer(TransferInputModel transferInputModel, Guid userId)
         {
-            var accountSending = accountRepository.GetAccount(transferInputModel.SendingAccountNumber, userId);
-            var accountReceiving = accountRepository.GetAccount(transferInputModel.ReceivingAccountNumber);
+            var accountSending = _accountRepository.GetAccount(transferInputModel.SendingAccountNumber, userId);
+            var accountReceiving = _accountRepository.GetAccount(transferInputModel.ReceivingAccountNumber);
 
             if (CheckIfTryingToTransferToTheSameAccount(accountSending.AccountNumber, accountReceiving.AccountNumber))
                 throw new AccountValidationException("Não é permitido fazer transferência entre a mesma conta.");
@@ -28,39 +30,40 @@ namespace WiseMoneyTest.Services
             if (!HasEnoughAccountBalance(accountSending.Balance, transferInputModel.TransferValue))
                 throw new AccountValidationException("Saldo insuficiente para transferência.");
 
-            Transaction transactionDebt = new Transaction(accountSending, "Debt", transferInputModel.TransferValue, DateTime.Now);
-            Transaction transactionCredit = new Transaction(accountReceiving, "Credit", transferInputModel.TransferValue, DateTime.Now);
+            Transactions transactionDebt = new Transactions
+                (accountSending.AccountNumber, TransactionEnum.Debt, transferInputModel.TransferValue, DateTime.Now);
+            Transactions transactionCredit = new Transactions
+                (accountReceiving.AccountNumber, TransactionEnum.Credit, transferInputModel.TransferValue, DateTime.Now);
 
-            transactionRepository.AddTransactionToList(transactionDebt);
-            transactionRepository.AddTransactionToList(transactionCredit);
+            _transactionRepository.AddTransaction(transactionDebt);
+            _transactionRepository.AddTransaction(transactionCredit);
 
-            accountSending.Balance -= transferInputModel.TransferValue;
-            accountReceiving.Balance += transferInputModel.TransferValue;
+            _accountRepository.UpdateBalanceAfterTransaction(accountSending, accountReceiving, transferInputModel.TransferValue);
         }
 
         public void Deposit(DepositInputModel depositInputModel)
         {
-            var accountToUpdate = accountRepository.GetAccount(depositInputModel.AccountNumber);
+            var accountToUpdate = _accountRepository.GetAccount(depositInputModel.AccountNumber);
             if (accountToUpdate == null)
                 throw new AccountNotFoundException("Conta não existe ou não pertence ao seu usuário.");
             
-            Transaction deposit = new Transaction(accountToUpdate, "credit", depositInputModel.Value, DateTime.Now);
+            Transactions deposit = new Transactions(accountToUpdate.AccountNumber, TransactionEnum.Credit, depositInputModel.Value, DateTime.Now);
 
-            transactionRepository.AddTransactionToList(deposit);
-            accountToUpdate.Balance += depositInputModel.Value;
+            _transactionRepository.AddTransaction(deposit);
+            _accountRepository.UpdateBalanceAfterDeposit(accountToUpdate, depositInputModel.Value);
         }
 
-        public List<Transaction> GetBankStatement(int accountNumber, DateTime startingDate, DateTime finishDate)
+        public List<Transactions> GetBankStatement(int accountNumber, DateTime startingDate, DateTime finishDate)
         {
-            var accountTransactions = transactionRepository.GetBankStatement(accountNumber, startingDate, finishDate);
+            var accountTransactions = _transactionRepository.GetBankStatement(accountNumber, startingDate, finishDate);
             if (accountTransactions == null)
                 throw new AccountValidationException("Não há transações para essa conta nesse intervalo");
 
             return accountTransactions;
         }
 
-        private bool HasEnoughAccountBalance(decimal balance, decimal transferValue) => balance >= transferValue;
+        public bool HasEnoughAccountBalance(decimal balance, decimal transferValue) => balance >= transferValue;
 
-        private bool CheckIfTryingToTransferToTheSameAccount(int accountNumberSending, int accountNumberReceiving) => accountNumberSending == accountNumberReceiving;
+        public bool CheckIfTryingToTransferToTheSameAccount(int accountNumberSending, int accountNumberReceiving) => accountNumberSending == accountNumberReceiving;
     }
 }

@@ -3,6 +3,7 @@ using WiseMoneyTest.Exceptions;
 using WiseMoneyTest.Models.Exceptions;
 using WiseMoneyTest.Models.User;
 using WiseMoneyTest.Services;
+using WiseMoneyTest.Services.Interfaces;
 
 namespace WiseMoneyTest.Controllers
 {
@@ -10,10 +11,10 @@ namespace WiseMoneyTest.Controllers
     [ApiController]
     public class UserController : WiseMoneyBaseController
     {
-        private readonly UserService userService;
-        public UserController()
+        private readonly IUserService _userService;
+        public UserController(IUserService service)
         {
-            userService = new UserService();
+            _userService = service;
         }
 
         [HttpPost("login")]
@@ -21,7 +22,7 @@ namespace WiseMoneyTest.Controllers
         {
             try
             {
-                var authenticate = userService.Authenticate(loginInputModel);
+                var authenticate = _userService.Authenticate(loginInputModel);
                 return Ok(authenticate);
             }
             catch (Exception ex)
@@ -38,7 +39,7 @@ namespace WiseMoneyTest.Controllers
         {
             try
             {
-                userService.CreateUser(createUserInputModel);
+                _userService.CreateUser(createUserInputModel);
                 return Created("", createUserInputModel);
             }
             catch(Exception ex)

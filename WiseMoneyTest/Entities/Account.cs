@@ -5,15 +5,15 @@ namespace WiseMoneyTest.Entities
 {
     public class Account
     {
-        public Account(int userId, int accountNumber)
+        public Account(int accountNumber, Guid userId)
         {
-            UserId = userId;
             AccountNumber = accountNumber;
+            UserId = userId;
         }
 
-        public int AccountId { get; set; }
+        public Guid Id { get; set; }
         public int AccountNumber { get; set; }
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
         public decimal Balance { get; set; }
     }
 }

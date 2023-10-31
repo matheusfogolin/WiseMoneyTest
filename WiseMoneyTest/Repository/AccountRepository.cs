@@ -1,46 +1,48 @@
-﻿using WiseMoneyTest.Entities;
+﻿using WiseMoneyTest.Data;
+using WiseMoneyTest.Entities;
+using WiseMoneyTest.Repository.Interfaces;
 
 namespace WiseMoneyTest.Repository
 {
-    public class AccountRepository
+    public class AccountRepository : IAccountRepository
     {
-        public static List<Account> AccountList = new List<Account>();
-
-        
+        private readonly WiseMoneyTestDbContext _context;
+        public AccountRepository(WiseMoneyTestDbContext context)
+        {
+            _context = context;
+        }
         public void CreateAccount(Account account)
         {
-            int lastId;
-
-            if (AccountList.Count > 0)
-            {
-                lastId = AccountList.Max(x => x.AccountId);
-            }
-            else
-            {
-                lastId = 0;
-            }
-
-            account.AccountId = lastId + 1;
-
-            AccountList.Add(account);
+            _context.Add(account);
+            _context.SaveChanges();
         }
         public bool CheckIfAccountNumberAlreadyExists(int accountNumber)
         {
-            return AccountList.Where(x => x.AccountNumber == accountNumber).Any();
+            return _context.Accounts.Where(x => x.AccountNumber == accountNumber).Any();
         }
-
-        public Account GetAccount(int accountNumber, int userId)
+        public Account GetAccount(int accountNumber, Guid userId)
         {
-            var account = AccountList.FirstOrDefault(x => x.UserId == userId && x.AccountNumber == accountNumber);
-
-            return account;
+            return _context.Accounts.FirstOrDefault(x => x.UserId == userId && x.AccountNumber == accountNumber);
         }
 
         public Account GetAccount(int accountNumber)
         {
-            var account = AccountList.FirstOrDefault(x => x.AccountNumber == accountNumber);
+            return _context.Accounts.FirstOrDefault(x => x.AccountNumber == accountNumber);
+        }
 
-            return account;
+        public void UpdateBalanceAfterTransaction(Account accountSending, Account accountReceiving, decimal transferValue)
+        {
+            accountSending.Balance -= transferValue;
+            accountReceiving.Balance += transferValue;
+
+            _context.SaveChanges();
+        }
+
+        public void UpdateBalanceAfterDeposit(Account account, decimal transferValue)
+        {
+            account.Balance += transferValue;
+
+            _context.SaveChanges();
         }
     }
 }

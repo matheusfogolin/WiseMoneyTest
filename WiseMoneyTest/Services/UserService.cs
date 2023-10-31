@@ -8,16 +8,18 @@ using WiseMoneyTest.Entities.Login;
 using WiseMoneyTest.Exceptions;
 using WiseMoneyTest.Models.User;
 using WiseMoneyTest.Repository;
+using WiseMoneyTest.Repository.Interfaces;
+using WiseMoneyTest.Services.Interfaces;
 
 namespace WiseMoneyTest.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
-        private readonly UserRepository userRepository;
+        private readonly IUserRepository _userRepository;
 
-        public UserService()
+        public UserService(IUserRepository repository)
         {
-            userRepository = new UserRepository();
+            _userRepository = repository;
         }
 
         public string GenerateToken(User user)
@@ -29,7 +31,7 @@ namespace WiseMoneyTest.Services
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Email, user.EmailAdress.ToString()),
-                    new Claim("UserId", user.UserId.ToString())
+                    new Claim("Id", user.Id.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -37,6 +39,15 @@ namespace WiseMoneyTest.Services
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+        public LoginResponse? Authenticate(LoginInputModel loginInputModel)
+        {
+            var user = _userRepository.GetUser(loginInputModel.Email, loginInputModel.Password);
+            if (user == null)
+                throw new AccountNotFoundException("E-mail ou senha inválidos.");
+
+            var token = GenerateToken(user);
+            return new LoginResponse(token);
         }
         public void ValidateEmail(string email)
         {
@@ -48,21 +59,12 @@ namespace WiseMoneyTest.Services
         {
             ValidateEmail(createUserInputModel.EmailAdress);
 
-            if (userRepository.EmailAlreadyRegistered(createUserInputModel.EmailAdress))
+            if (_userRepository.EmailAlreadyRegistered(createUserInputModel.EmailAdress))
                 throw new InvalidEmailException("O e-mail já existe na base de dados.");
 
             var user = new User(createUserInputModel.EmailAdress, createUserInputModel.Password);
 
-            userRepository.CreateUser(user);
-        }
-        public LoginResponse? Authenticate(LoginInputModel loginInputModel)
-        {
-            var user = userRepository.GetUser(loginInputModel.User, loginInputModel.Password);
-            if (user == null)
-                throw new AccountNotFoundException("E-mail ou senha inválidos.");
-
-            var token = GenerateToken(user);
-            return new LoginResponse(token);
+            _userRepository.CreateUser(user);
         }
     }
 }

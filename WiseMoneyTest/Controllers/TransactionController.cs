@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using WiseMoneyTest.Exceptions;
 using WiseMoneyTest.Models.Exceptions;
 using WiseMoneyTest.Models.Transactions;
+using WiseMoneyTest.Repository.Interfaces;
 using WiseMoneyTest.Services;
+using WiseMoneyTest.Services.Interfaces;
 
 namespace WiseMoneyTest.Controllers
 {
@@ -12,19 +15,24 @@ namespace WiseMoneyTest.Controllers
     [Authorize]
     public class TransactionController : WiseMoneyBaseController
     {
-        private readonly TransactionService transactionService;
+        private readonly ITransactionService _transactionService;
+        private readonly IAccountService _accountService;
+        private readonly IAccountRepository _accountRepository;
 
-        public TransactionController()
+        public TransactionController(ITransactionService transactionService, IAccountService accountService, IAccountRepository accountRepository)
         {
-            transactionService = new TransactionService();
+            _transactionService = transactionService;
+            _accountService = accountService;
+            _accountRepository = accountRepository;
         }
+
         [HttpPost("transfer")]
         public IActionResult Transfer(TransferInputModel transferInputModel)
         {
             try
             {
-                var userId = Convert.ToInt32(User.FindFirst("UserId").Value);
-                transactionService.Transfer(transferInputModel, userId);
+                var userId = _accountService.FindUserFromRequest();
+                _transactionService.Transfer(transferInputModel, userId);
                 return Ok();
             }
             catch (Exception ex)
@@ -40,7 +48,7 @@ namespace WiseMoneyTest.Controllers
         {
             try
             {
-                transactionService.Deposit(depositInputModel);
+                _transactionService.Deposit(depositInputModel);
                 return Ok();
             }
             catch (Exception ex)
@@ -57,7 +65,7 @@ namespace WiseMoneyTest.Controllers
         {
             try
             {
-                var statements = transactionService.GetBankStatement(accountNumber, startingDate, finishDate);
+                var statements = _transactionService.GetBankStatement(accountNumber, startingDate, finishDate);
                 return Ok(statements);
             }
             catch(Exception ex)

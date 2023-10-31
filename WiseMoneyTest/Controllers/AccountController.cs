@@ -3,19 +3,20 @@ using Microsoft.AspNetCore.Mvc;
 using WiseMoneyTest.Exceptions;
 using WiseMoneyTest.Models.Exceptions;
 using WiseMoneyTest.Services;
+using WiseMoneyTest.Services.Interfaces;
 
 namespace WiseMoneyTest.Controllers
 {
     [Route("api/account")]
     [ApiController]
     [Authorize]
-    public class BankAccountController : WiseMoneyBaseController
+    public class AccountController : WiseMoneyBaseController
     {
-        private readonly AccountService accountService;
+        private readonly IAccountService _accountService;
 
-        public BankAccountController()
+        public AccountController(IAccountService accountService)
         {
-            accountService = new AccountService();
+            _accountService = accountService;
         }
 
         [HttpPost]
@@ -23,8 +24,8 @@ namespace WiseMoneyTest.Controllers
         {
             try
             {
-                var userId = Convert.ToInt32(User.FindFirst("UserId").Value);
-                var newAccount = accountService.CreateAccount(userId);
+                var userId = _accountService.FindUserFromRequest();
+                var newAccount = _accountService.CreateAccount(userId);
                 return Created("", newAccount);
             }
             catch
@@ -37,8 +38,8 @@ namespace WiseMoneyTest.Controllers
         {
             try
             {
-                var userId = Convert.ToInt32(User.FindFirst("UserId").Value);
-                return Ok(accountService.GetBalance(accountNumber, userId));
+                var userId = _accountService.FindUserFromRequest();
+                return Ok(_accountService.GetBalance(accountNumber, userId));
             }
             catch (Exception ex)
             {
